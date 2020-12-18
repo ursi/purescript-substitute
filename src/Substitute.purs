@@ -1,5 +1,6 @@
 module Substitute
-  ( normalize
+  ( module Type.Row.Homogeneous
+  , normalize
   , createSubstituter
   , Options
   , defaultOptions
