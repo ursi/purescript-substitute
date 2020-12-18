@@ -1,0 +1,20 @@
+{
+    "name": "purescript-substitute",
+    "license": [
+        "BSD-3-Clause"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ursi/purescript-substitute.git"
+    },
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "output"
+    ],
+    "dependencies": {
+        "purescript-foreign-object": "^v2.0.3",
+        "purescript-mason-prelude": "ursi/purescript-mason-prelude#^v0.5.0"
+    }
+}
