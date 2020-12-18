@@ -340,6 +340,36 @@ bar
   log baz
 
 """
+  test "docs: readme"
+    ( substitute
+        """
+        ${name} :: Int -> Int -> ${type}
+        ${name} a b =
+          let
+            ${lets}
+          in
+            c - d
+        """
+        { name: "myFunction"
+        , "type": "Int"
+        , lets:
+            """
+            c = a + b
+
+            d = a * b
+            """
+        }
+    )
+    """myFunction :: Int -> Int -> Int
+myFunction a b =
+  let
+    c = a + b
+
+    d = a * b
+  in
+    c - d
+"""
+
 
 test :: String -> String -> String -> Effect Unit
 test label s1 s2 =
