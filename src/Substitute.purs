@@ -122,7 +122,7 @@ type ParseState
 -- | Use `normalize` on the substitutions.
 -- |
 -- | ### indent :: Boolean
--- | When substituting in multi-line strings, pad with the appropriate whitespace so that all the lines are at the indentation level of the marker.
+-- | When substituting in multi-line strings, pad with the appropriate whitespace so that all the lines are at the indentation level of the marker. Empty lines are not padded.
 -- |
 -- |
 -- | ```
@@ -157,9 +157,8 @@ type ParseState
 -- |   log foo
 -- |   log bar
 -- |   log baz
--- |   
+-- |
 -- | """
--- | -- there are two spaces in the empty line due to `indent` being `true`
 -- | ```
 type Options
   = { marker :: Char
@@ -273,7 +272,11 @@ createSubstituter { marker
                                                   <> foldl
                                                       ( \acc line ->
                                                           acc <> "\n"
-                                                            <> rep state.leadingSpaces " "
+                                                            <> ( if line == "" then
+                                                                  ""
+                                                                else
+                                                                  rep state.leadingSpaces " "
+                                                              )
                                                             <> line
                                                       )
                                                       ""

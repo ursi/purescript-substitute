@@ -140,7 +140,7 @@ are you
     """hi
     Mason,
     how
-    
+
 are you
 """
   test "16"
@@ -266,6 +266,27 @@ are you
             
         are you
         """
+  test "25"
+    ( substitute
+        """
+        hi
+            ${test}
+        are you
+        """
+        { test:
+            """
+            Mason,
+
+            how
+            """
+        }
+    )
+    """hi
+    Mason,
+
+    how
+are you
+"""
   test "docs: normalize"
     ( normalize
         """
@@ -317,7 +338,7 @@ bar
   log foo
   log bar
   log baz
-  
+
 """
 
 test :: String -> String -> String -> Effect Unit
