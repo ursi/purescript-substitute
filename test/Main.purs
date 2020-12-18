@@ -96,14 +96,14 @@ how are you
     "hi ${name}, how are you"
   test "10" (substitute "$" {}) "$"
   test "11" (substitute "${name}" { name: "Mason" }) "Mason"
-  test "12" (substitute "${name}" {}) "!!! MISSING KEY: \"name\" !!!"
+  test "12" (substitute "${name}" {}) "[MISSING KEY: \"name\"]"
   test "13"
     ( createSubstituter
-        (defaultOptions { default = const "default" })
-        "${name}"
+        (defaultOptions { missing = const "missing" })
+        "foo ${name} bar"
         {}
     )
-    "default"
+    "missing"
   test "14"
     ( substitute
         """

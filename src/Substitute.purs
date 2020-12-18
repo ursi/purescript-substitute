@@ -109,10 +109,10 @@ type ParseState
     }
 
 -- | ### marker, open, close :: Char
--- | These three characters are used for detecting places to substitute values. Unless preceded by a `\`, sequences of the form `<marker><open>key<close>` will be replaced by the value at `key` in the substitution record, if it exists. When it doesn't exist, see `default` below.
+-- | These three characters are used for detecting places to substitute values. Unless preceded by a `\`, sequences of the form `<marker><open>key<close>` will be replaced by the value at `key` in the substitution record, if it exists. When it doesn't exist, see `missing` below.
 -- |
--- | ### default :: String -> String
--- | When there is no value associated with `key`, `key` is passed to `default` and that value is substituted in instead.
+-- | ### missing :: String -> String
+-- | When there is no value associated with `key`, the substituter returns the result of passing `key` into `missing`.
 -- |
 -- | ### normalizeString :: Boolean
 -- | Use `normalize` on the string passed to the function.
@@ -164,7 +164,7 @@ type Options
   = { marker :: Char
     , open :: Char
     , close :: Char
-    , default :: String -> String
+    , missing :: String -> String
     , normalizeString :: Boolean
     , normalizeSubstitutions :: Boolean
     , indent :: Boolean
@@ -175,7 +175,7 @@ type Options
 -- | { marker: '$'
 -- | , open: '{'
 -- | , close: '}'
--- | , default: \key -> "!!! MISSING KEY: \"" <> key <> "\" !!!"
+-- | , missing: \key -> "[MISSING KEY: \"" <> key <> "\"]"
 -- | , normalizeString: true
 -- | , normalizeSubstitutions: true
 -- | , indent: true
@@ -187,7 +187,7 @@ defaultOptions =
   { marker: '$'
   , open: '{'
   , close: '}'
-  , default: \key -> "!!! MISSING KEY: \"" <> key <> "\" !!!"
+  , missing: \key -> "[MISSING KEY: \"" <> key <> "\"]"
   , normalizeString: true
   , normalizeSubstitutions: true
   , indent: true
@@ -204,7 +204,7 @@ createSubstituter ::
 createSubstituter { marker
 , open
 , close
-, default
+, missing
 , normalizeString
 , normalizeSubstitutions
 , indent
@@ -220,76 +220,75 @@ createSubstituter { marker
           else
             templateStr
   in
-    foldl
+    foldx
       ( \(state /\ str) char ->
           let
             charS = fromChar char
           in
             case state.state, char of
-              _, '\n' -> state { state = CountingSpaces 0 } /\ (str <> charS)
-              Continuing, '\\' -> state { state = Skipping } /\ (str <> charS)
+              _, '\n' -> Cont $ state { state = CountingSpaces 0 } /\ (str <> charS)
+              Continuing, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
               Continuing, _ ->
                 if char == marker then
-                  state { leadingSpaces = 0, state = EnteringTemplate } /\ (str <> charS)
+                  Cont $ state { leadingSpaces = 0, state = EnteringTemplate } /\ (str <> charS)
                 else
-                  state { state = Continuing } /\ (str <> charS)
-              CountingSpaces n, ' ' -> state { state = CountingSpaces $ n + 1 } /\ (str <> charS)
-              CountingSpaces n, '\\' -> state { leadingSpaces = n, state = Skipping } /\ (str <> charS)
+                  Cont $ state { state = Continuing } /\ (str <> charS)
+              CountingSpaces n, ' ' -> Cont $ state { state = CountingSpaces $ n + 1 } /\ (str <> charS)
+              CountingSpaces n, '\\' -> Cont $ state { leadingSpaces = n, state = Skipping } /\ (str <> charS)
               CountingSpaces n, _ ->
                 if char == marker then
-                  state { leadingSpaces = n, state = EnteringTemplate } /\ (str <> charS)
+                  Cont $ state { leadingSpaces = n, state = EnteringTemplate } /\ (str <> charS)
                 else
-                  state { state = Continuing } /\ (str <> charS)
+                  Cont $ state { state = Continuing } /\ (str <> charS)
               EnteringTemplate, _ ->
                 if char == open then
-                  state { state = GettingKey "" } /\ StringC.dropRight 1 str
+                  Cont $ state { state = GettingKey "" } /\ StringC.dropRight 1 str
                 else
-                  state { state = Continuing } /\ (str <> charS)
+                  Cont $ state { state = Continuing } /\ (str <> charS)
               GettingKey key, _ ->
-                if char == close then
-                  state { state = Continuing }
-                    /\ ( str
-                          <> ( Obj.lookup key subs
-                                # maybe (default key)
-                                    ( ( if normalizeSubstitutions then
-                                          normalize
-                                        else
-                                          identity
-                                      )
-                                        .> ( \value ->
-                                              unsnocString value
-                                                # maybe value \{ init, last } ->
-                                                    if last == '\n' && suppress then
-                                                      init
-                                                    else
-                                                      value
-                                          )
-                                        .> \value ->
-                                            if indent then
-                                              toLines value
-                                                # \lines -> case ArrayNE.uncons lines of
-                                                    { head, tail } ->
-                                                      head
-                                                        <> foldl
-                                                            ( \acc line ->
-                                                                acc <> "\n"
-                                                                  <> rep state.leadingSpaces " "
-                                                                  <> line
-                                                            )
-                                                            ""
-                                                            tail
-                                            else
-                                              value
+                if char == close then case Obj.lookup key subs of
+                  Just value ->
+                    Cont $ state { state = Continuing }
+                      /\ ( str
+                            <> ( ( if normalizeSubstitutions then
+                                    normalize value
+                                  else
+                                    identity value
+                                )
+                                  # ( \v ->
+                                        unsnocString v
+                                          # maybe v \{ init, last } ->
+                                              if last == '\n' && suppress then
+                                                init
+                                              else
+                                                v
                                     )
-                            )
-                      )
+                                  # \v ->
+                                      if indent then
+                                        toLines v
+                                          # \lines -> case ArrayNE.uncons lines of
+                                              { head, tail } ->
+                                                head
+                                                  <> foldl
+                                                      ( \acc line ->
+                                                          acc <> "\n"
+                                                            <> rep state.leadingSpaces " "
+                                                            <> line
+                                                      )
+                                                      ""
+                                                      tail
+                                      else
+                                        v
+                              )
+                        )
+                  Nothing -> Stop $ state /\ missing key
                 else
-                  state { state = GettingKey $ key <> charS } /\ str
+                  Cont $ state { state = GettingKey $ key <> charS } /\ str
               Skipping, _ ->
                 if char == marker then
-                  state { state = Continuing } /\ (StringC.dropRight 1 str <> charS)
+                  Cont $ state { state = Continuing } /\ (StringC.dropRight 1 str <> charS)
                 else
-                  state { state = Continuing } /\ (str <> charS)
+                  Cont $ state { state = Continuing } /\ (str <> charS)
       )
       ( { leadingSpaces: 0
         , state: CountingSpaces 0
@@ -311,6 +310,20 @@ unsnocString s =
     StringC.charAt lengthm1 s
       <#> { last: _, init: String.take lengthm1 s }
 
+data Fold a
+  = Cont a
+  | Stop a
+
+foldx :: ∀ a b. (b -> a -> Fold b) -> b -> Array a -> b
+foldx f = go
+  where
+  go :: b -> Array a -> b
+  go acc bs = case Array.uncons bs of
+    Just { head, tail } -> case f acc head of
+      Cont b -> go b tail
+      Stop b -> b
+    Nothing -> acc
+
 rep :: Int -> String -> String
 rep n s
   | n == 0 = ""
@@ -320,7 +333,7 @@ rep n s
 -- | { marker: '$'
 -- | , open: '{'
 -- | , close: '}'
--- | , default: \key -> "${" <> key <> "}"
+-- | , missing: \key -> "[MISSING KEY: \"" <> key <> "\"]"
 -- | , normalizeString: false
 -- | , normalizeSubstitutions: false
 -- | , indent: false
@@ -332,7 +345,7 @@ minimalOptions =
   { marker: '$'
   , open: '{'
   , close: '}'
-  , default: \key -> "${" <> key <> "}"
+  , missing: \key -> "[MISSING KEY: \"" <> key <> "\"]"
   , normalizeString: false
   , normalizeSubstitutions: false
   , indent: false
