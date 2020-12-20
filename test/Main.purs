@@ -287,6 +287,9 @@ are you
     how
 are you
 """
+  test "26" (substitute """\\${test}""" {}) """\${test}"""
+  test "27" (substitute """\\\${test}""" {}) """\\${test}"""
+  test "28" (substitute """\a\\b\\\c""" {}) """\a\\b\\\c"""
   test "docs: normalize"
     ( normalize
         """

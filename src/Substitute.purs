@@ -288,6 +288,7 @@ createSubstituter { marker
                   Nothing -> Stop $ state /\ missing key
                 else
                   Cont $ state { state = GettingKey $ key <> charS } /\ str
+              Skipping, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
               Skipping, _ ->
                 if char == marker then
                   Cont $ state { state = Continuing } /\ (StringC.dropRight 1 str <> charS)
