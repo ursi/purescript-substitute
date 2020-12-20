@@ -72,12 +72,12 @@ normalize str =
                     acc
                   else
                     StringC.countPrefix (eq ' ') line
-                      # if acc == 0 then
+                      # if acc == -1 then
                           identity
                         else
                           min acc
               )
-              0
+              (-1)
               blankLineRemoved
         in
           foldl
