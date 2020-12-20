@@ -370,7 +370,6 @@ myFunction a b =
     c - d
 """
 
-
 test :: String -> String -> String -> Effect Unit
 test label s1 s2 =
   if s1 == s2 then
