@@ -16,6 +16,8 @@ import Data.String (Pattern(..))
 import Data.String as String
 import Data.String.CodeUnits as StringC
 import Foreign.Object as Obj
+import Return (Return(..))
+import Return.Folds as Rfolds
 import Type.Row.Homogeneous (class Homogeneous)
 
 toLines :: String -> NonEmptyArray String
@@ -220,7 +222,7 @@ createSubstituter { marker
           else
             templateStr
   in
-    foldx
+    Rfolds.foldl
       ( \(state /\ str) char ->
           let
             charS = fromChar char
@@ -285,7 +287,7 @@ createSubstituter { marker
                                         v
                               )
                         )
-                  Nothing -> Stop $ state /\ missing key
+                  Nothing -> Return $ state /\ missing key
                 else
                   Cont $ state { state = GettingKey $ key <> charS } /\ str
               Skipping, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
@@ -314,20 +316,6 @@ unsnocString s =
   in
     StringC.charAt lengthm1 s
       <#> { last: _, init: String.take lengthm1 s }
-
-data Fold a
-  = Cont a
-  | Stop a
-
-foldx :: ∀ a b. (b -> a -> Fold b) -> b -> Array a -> b
-foldx f = go
-  where
-  go :: b -> Array a -> b
-  go acc bs = case Array.uncons bs of
-    Just { head, tail } -> case f acc head of
-      Cont b -> go b tail
-      Stop b -> b
-    Nothing -> acc
 
 rep :: Int -> String -> String
 rep n s
