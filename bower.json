@@ -15,6 +15,7 @@
     ],
     "dependencies": {
         "purescript-foreign-object": "^v2.0.3",
-        "purescript-mason-prelude": "ursi/purescript-mason-prelude#^v0.5.0"
+        "purescript-mason-prelude": "ursi/purescript-mason-prelude#^v0.5.0",
+        "purescript-return": "ursi/purescript-return#^v0.1.0"
     }
 }
