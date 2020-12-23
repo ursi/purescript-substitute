@@ -1,5 +1,7 @@
 # Substitute
 
+[![Pursuit](https://pursuit.purescript.org/packages/purescript-substitute/badge)](https://pursuit.purescript.org/packages/purescript-substitute)
+
 Substitute is an advanced string interpolation library that allows you to customize the behaviour of your interpolation function. It includes features such as removing whitespace from multi-line strings so they can be indented like the rest of your code, and preserving indentation levels when inserting multi-line strings. Here is an example showing both of these features.
 ```purescript
 -- str1 = str2
