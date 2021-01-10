@@ -255,7 +255,7 @@ createSubstituter { marker
                             <> ( ( if normalizeSubstitutions then
                                     normalize value
                                   else
-                                    identity value
+                                    value
                                 )
                                   # ( \v ->
                                         unsnocString v
