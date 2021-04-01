@@ -23,8 +23,8 @@ import Type.Row.Homogeneous (class Homogeneous)
 toLines :: String -> NonEmptyArray String
 toLines =
   String.split (Pattern "\n")
-    .> ArrayNE.fromArray
-    .> fromMaybe (pure "")
+  .> ArrayNE.fromArray
+  .> fromMaybe (pure "")
 
 -- | Remove whitespace in a way that lets you use multi-line strings independent of indentation, and allows the first line to be lined up with the rest of the string. Single-line strings are unchanged.
 -- |```
@@ -48,56 +48,56 @@ toLines =
 -- |```
 normalize :: String -> String
 normalize str =
-  ( if String.take 1 str == "\n" then
-      String.drop 1 str
-    else
-      str
+  (if String.take 1 str == "\n" then
+     String.drop 1 str
+   else
+     str
   )
-    # toLines
-    # \lines ->
-        let
-          blankLineRemoved =
-            ArrayNE.unsnoc lines
-              # \{ init, last } ->
-                  if StringC.countPrefix (eq ' ') last == String.length last then
-                    if Array.null init then
-                      [ "" ]
-                    else
-                      init
-                  else
-                    ArrayNE.toArray lines
-
-          minSpaces =
-            foldl
-              ( \acc line ->
-                  if line == "" then
-                    acc
-                  else
-                    StringC.countPrefix (eq ' ') line
-                      # if acc == -1 then
-                          identity
-                        else
-                          min acc
-              )
-              (-1)
-              blankLineRemoved
-        in
-          foldl
-            ( \(acc /\ first) line ->
-                ( String.drop minSpaces line
-                    # if first then
-                        identity
-                      else \l -> acc <> "\n" <> l
-                )
-                  /\ false
-            )
-            ("" /\ true)
-            blankLineRemoved
-            # \(s /\ _) ->
-                if ArrayNE.length lines == Array.length blankLineRemoved then
-                  s
+  # toLines
+  # \lines ->
+      let
+        blankLineRemoved =
+          ArrayNE.unsnoc lines
+          # \{ init, last } ->
+              if StringC.countPrefix (eq ' ') last == String.length last then
+                if Array.null init then
+                  [ "" ]
                 else
-                  s <> "\n"
+                  init
+              else
+                ArrayNE.toArray lines
+
+        minSpaces =
+          foldl
+            (\acc line ->
+               if line == "" then
+                 acc
+               else
+                 StringC.countPrefix (eq ' ') line
+                 # if acc == -1 then
+                     identity
+                   else
+                     min acc
+            )
+            (-1)
+            blankLineRemoved
+      in
+        foldl
+          (\(acc /\ first) line ->
+             (String.drop minSpaces line
+              # if first then
+                  identity
+                else \l -> acc <> "\n" <> l
+             )
+             /\ false
+          )
+          ("" /\ true)
+          blankLineRemoved
+        # \(s /\ _) ->
+            if ArrayNE.length lines == Array.length blankLineRemoved then
+              s
+            else
+              s <> "\n"
 
 data State
   = CountingSpaces Int
@@ -203,107 +203,111 @@ createSubstituter ::
   String ->
   Record r ->
   String
-createSubstituter { marker
-, open
-, close
-, missing
-, normalizeString
-, normalizeSubstitutions
-, indent
-, suppress
-} templateStr subsRec =
+createSubstituter
+  { marker
+  , open
+  , close
+  , missing
+  , normalizeString
+  , normalizeSubstitutions
+  , indent
+  , suppress
+  }
+  templateStr
+  subsRec =
   let
     subs = Obj.fromHomogeneous subsRec
 
     chars =
       toCharArray
-        $ if normalizeString then
-            normalize templateStr
-          else
-            templateStr
+      $ if normalizeString then
+          normalize templateStr
+        else
+          templateStr
   in
     Rfolds.foldl
-      ( \(state /\ str) char ->
-          let
-            charS = fromChar char
-          in
-            case state.state, char of
-              _, '\n' -> Cont $ state { state = CountingSpaces 0 } /\ (str <> charS)
-              Continuing, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
-              Continuing, _ ->
-                if char == marker then
-                  Cont $ state { leadingSpaces = 0, state = EnteringTemplate } /\ (str <> charS)
-                else
-                  Cont $ state { state = Continuing } /\ (str <> charS)
-              CountingSpaces n, ' ' -> Cont $ state { state = CountingSpaces $ n + 1 } /\ (str <> charS)
-              CountingSpaces n, '\\' -> Cont $ state { leadingSpaces = n, state = Skipping } /\ (str <> charS)
-              CountingSpaces n, _ ->
-                if char == marker then
-                  Cont $ state { leadingSpaces = n, state = EnteringTemplate } /\ (str <> charS)
-                else
-                  Cont $ state { state = Continuing } /\ (str <> charS)
-              EnteringTemplate, _ ->
-                if char == open then
-                  Cont $ state { state = GettingKey "" } /\ StringC.dropRight 1 str
-                else
-                  Cont $ state { state = Continuing } /\ (str <> charS)
-              GettingKey key, _ ->
-                if char == close then case Obj.lookup key subs of
-                  Just value ->
-                    Cont $ state { state = Continuing }
-                      /\ ( str
-                            <> ( ( if normalizeSubstitutions then
-                                    normalize value
-                                  else
-                                    value
-                                )
-                                  # ( \v ->
-                                        unsnocString v
-                                          # maybe v \{ init, last } ->
-                                              if last == '\n' && suppress then
-                                                init
-                                              else
-                                                v
-                                    )
-                                  # \v ->
-                                      if indent then
-                                        toLines v
-                                          # \lines -> case ArrayNE.uncons lines of
-                                              { head, tail } ->
-                                                head
-                                                  <> foldl
-                                                      ( \acc line ->
-                                                          acc <> "\n"
-                                                            <> ( if line == "" then
-                                                                  ""
-                                                                else
-                                                                  rep state.leadingSpaces " "
-                                                              )
-                                                            <> line
-                                                      )
-                                                      ""
-                                                      tail
-                                      else
-                                        v
-                              )
-                        )
-                  Nothing -> Return $ state /\ missing key
-                else
-                  Cont $ state { state = GettingKey $ key <> charS } /\ str
-              Skipping, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
-              Skipping, _ ->
-                if char == marker then
-                  Cont $ state { state = Continuing } /\ (StringC.dropRight 1 str <> charS)
-                else
-                  Cont $ state { state = Continuing } /\ (str <> charS)
+      (\(state /\ str) char ->
+         let
+           charS = fromChar char
+         in
+           case state.state, char of
+             _, '\n' -> Cont $ state { state = CountingSpaces 0 } /\ (str <> charS)
+             Continuing, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
+             Continuing, _ ->
+               if char == marker then
+                 Cont $ state { leadingSpaces = 0, state = EnteringTemplate } /\ (str <> charS)
+               else
+                 Cont $ state { state = Continuing } /\ (str <> charS)
+             CountingSpaces n, ' ' -> Cont $ state { state = CountingSpaces $ n + 1 } /\ (str <> charS)
+             CountingSpaces n, '\\' -> Cont $ state { leadingSpaces = n, state = Skipping } /\ (str <> charS)
+             CountingSpaces n, _ ->
+               if char == marker then
+                 Cont $ state { leadingSpaces = n, state = EnteringTemplate } /\ (str <> charS)
+               else
+                 Cont $ state { state = Continuing } /\ (str <> charS)
+             EnteringTemplate, _ ->
+               if char == open then
+                 Cont $ state { state = GettingKey "" } /\ StringC.dropRight 1 str
+               else
+                 Cont $ state { state = Continuing } /\ (str <> charS)
+             GettingKey key, _ ->
+               if char == close then case Obj.lookup key subs of
+                 Just value ->
+                   Cont $ state { state = Continuing }
+                   /\ (str
+                       <> ((if normalizeSubstitutions then
+                              normalize value
+                            else
+                              value
+                           )
+                           # (\v ->
+                                unsnocString v
+                                # maybe v \{ init, last } ->
+                                    if last == '\n' && suppress then
+                                      init
+                                    else
+                                      v
+                             )
+                           # \v ->
+                               if indent then
+                                 toLines v
+                                 # \lines -> case ArrayNE.uncons lines of
+                                     { head, tail } ->
+                                       head
+                                       <> foldl
+                                            (\acc line ->
+                                               acc
+                                               <> "\n"
+                                               <> (if line == "" then
+                                                     ""
+                                                   else
+                                                     rep state.leadingSpaces " "
+                                                  )
+                                               <> line
+                                            )
+                                            ""
+                                            tail
+                               else
+                                 v
+                          )
+                      )
+                 Nothing -> Return $ state /\ missing key
+               else
+                 Cont $ state { state = GettingKey $ key <> charS } /\ str
+             Skipping, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
+             Skipping, _ ->
+               if char == marker then
+                 Cont $ state { state = Continuing } /\ (StringC.dropRight 1 str <> charS)
+               else
+                 Cont $ state { state = Continuing } /\ (str <> charS)
       )
-      ( { leadingSpaces: 0
-        , state: CountingSpaces 0
-        }
-          /\ ""
+      ({ leadingSpaces: 0
+       , state: CountingSpaces 0
+       }
+       /\ ""
       )
       chars
-      # snd
+    # snd
 
 -- | `createSubstituter defaultOptions`
 substitute :: ∀ r. Homogeneous r String => String -> Record r -> String
@@ -315,7 +319,7 @@ unsnocString s =
     lengthm1 = String.length s - 1
   in
     StringC.charAt lengthm1 s
-      <#> { last: _, init: String.take lengthm1 s }
+    <#> { last: _, init: String.take lengthm1 s }
 
 rep :: Int -> String -> String
 rep n s
