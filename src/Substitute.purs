@@ -100,8 +100,7 @@ normalize str =
               s <> "\n"
 
 data State
-  = CountingSpaces Int
-  | EnteringTemplate
+  = EnteringTemplate
   | GettingKey String
   | Continuing
   | Skipping
@@ -226,30 +225,24 @@ createSubstituter
           templateStr
   in
     Rfolds.foldl
-      (\(state /\ str) char ->
+      (\(state'@{ leadingSpaces, state } /\ str) char ->
          let
            charS = fromChar char
+           plusOneState = state' { leadingSpaces = leadingSpaces + 1 }
          in
-           case state.state, char of
-             _, '\n' -> Cont $ state { state = CountingSpaces 0 } /\ (str <> charS)
-             Continuing, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
+           case state, char of
+             _, '\n' -> Cont $ state' { leadingSpaces = 0, state = Continuing } /\ (str <> charS)
+             Continuing, '\\' -> Cont $ plusOneState { state = Skipping } /\ (str <> charS)
              Continuing, _ ->
                if char == marker then
-                 Cont $ state { leadingSpaces = 0, state = EnteringTemplate } /\ (str <> charS)
+                 Cont $ state' { state = EnteringTemplate } /\ (str <> charS)
                else
-                 Cont $ state { state = Continuing } /\ (str <> charS)
-             CountingSpaces n, ' ' -> Cont $ state { state = CountingSpaces $ n + 1 } /\ (str <> charS)
-             CountingSpaces n, '\\' -> Cont $ state { leadingSpaces = n, state = Skipping } /\ (str <> charS)
-             CountingSpaces n, _ ->
-               if char == marker then
-                 Cont $ state { leadingSpaces = n, state = EnteringTemplate } /\ (str <> charS)
-               else
-                 Cont $ state { state = Continuing } /\ (str <> charS)
+                 Cont $ plusOneState { state = Continuing } /\ (str <> charS)
              EnteringTemplate, _ ->
                if char == open then
-                 Cont $ state { state = GettingKey "" } /\ StringC.dropRight 1 str
+                 Cont $ state' { state = GettingKey "" } /\ StringC.dropRight 1 str
                else
-                 Cont $ state { state = Continuing } /\ (str <> charS)
+                 Cont $ plusOneState { state = Continuing } /\ (str <> charS)
              GettingKey key, _ ->
                if char == close then case Obj.lookup key subs of
                  Just value ->
@@ -282,7 +275,7 @@ createSubstituter
                                                <> (if line == "" then
                                                      ""
                                                    else
-                                                     rep state.leadingSpaces " "
+                                                     rep leadingSpaces " "
                                                   )
                                                <> line
                                             )
@@ -292,18 +285,18 @@ createSubstituter
                                  v
                           )
                       )
-                 Nothing -> Return $ state /\ missing key
+                 Nothing -> Return $ state' /\ missing key
                else
-                 Cont $ state { state = GettingKey $ key <> charS } /\ str
-             Skipping, '\\' -> Cont $ state { state = Skipping } /\ (str <> charS)
+                 Cont $ state' { state = GettingKey $ key <> charS } /\ str
+             Skipping, '\\' -> Cont $ plusOneState { state = Skipping } /\ (str <> charS)
              Skipping, _ ->
                if char == marker then
-                 Cont $ state { state = Continuing } /\ (StringC.dropRight 1 str <> charS)
+                 Cont $ state' { state = Continuing } /\ (StringC.dropRight 1 str <> charS)
                else
-                 Cont $ state { state = Continuing } /\ (str <> charS)
+                 Cont $ plusOneState { state = Continuing } /\ (str <> charS)
       )
       ({ leadingSpaces: 0
-       , state: CountingSpaces 0
+       , state: Continuing
        }
        /\ ""
       )

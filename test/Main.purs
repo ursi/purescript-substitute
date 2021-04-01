@@ -299,6 +299,45 @@ are you
     """foo
   bar
 """
+  test "30"
+    (substitute
+       """
+       { ${test}
+       }
+       """
+       { test:
+           """
+           foo
+           bar
+           baz
+           """
+       }
+    )
+    """{ foo
+  bar
+  baz
+}
+"""
+  test "31"
+    (substitute
+       """
+       { ${test} ${test2}
+       }
+       """
+       { test:
+           """
+           foo
+           bar
+           baz
+           """
+       , test2: "qux"
+       }
+    )
+    """{ foo
+  bar
+  baz qux
+}
+"""
   test "docs: normalize"
     ( normalize
         """
