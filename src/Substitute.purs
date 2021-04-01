@@ -253,7 +253,8 @@ createSubstituter
              GettingKey key, _ ->
                if char == close then case Obj.lookup key subs of
                  Just value ->
-                   Cont $ state { state = Continuing }
+                   Cont
+                   $ state' { state = Continuing }
                    /\ (str
                        <> ((if normalizeSubstitutions then
                               normalize value
