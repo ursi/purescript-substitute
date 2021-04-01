@@ -427,6 +427,6 @@ test label s1 s2 =
     pure unit
   else do
     log $ "failure: " <> label
-    logShow s1
-    logShow s2
+    logShow $ "got:" <> s1
+    logShow $ "exp:" <> s2
     assert false
