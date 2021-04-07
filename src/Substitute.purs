@@ -1,7 +1,7 @@
 module Substitute
   ( module Type.Row.Homogeneous
   , normalize
-  , createSubstituter
+  , makeSubstituter
   , Options
   , defaultOptions
   , substitute
@@ -195,14 +195,14 @@ defaultOptions =
   , suppress: true
   }
 
-createSubstituter ::
+makeSubstituter ::
   ∀ r.
   Homogeneous r String =>
   Options ->
   String ->
   Record r ->
   String
-createSubstituter
+makeSubstituter
   { marker
   , open
   , close
@@ -303,9 +303,9 @@ createSubstituter
       chars
     # snd
 
--- | `createSubstituter defaultOptions`
+-- | `makeSubstituter defaultOptions`
 substitute :: ∀ r. Homogeneous r String => String -> Record r -> String
-substitute = createSubstituter defaultOptions
+substitute = makeSubstituter defaultOptions
 
 unsnocString :: String -> Maybe { init :: String, last :: Char }
 unsnocString s =

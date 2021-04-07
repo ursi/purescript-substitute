@@ -1,7 +1,7 @@
 module Test.Main where
 
 import MasonPrelude
-import Substitute (defaultOptions, normalize, substitute, createSubstituter)
+import Substitute (defaultOptions, normalize, substitute, makeSubstituter)
 import Test.Assert (assert)
 
 main :: Effect Unit
@@ -98,7 +98,7 @@ how are you
   test "11" (substitute "${name}" { name: "Mason" }) "Mason"
   test "12" (substitute "${name}" {}) "[MISSING KEY: \"name\"]"
   test "13"
-    ( createSubstituter
+    ( makeSubstituter
         (defaultOptions { missing = const "missing" })
         "foo ${name} bar"
         {}
@@ -124,7 +124,7 @@ how are you
 are you
 """
   test "15"
-    ( createSubstituter (defaultOptions { suppress = false })
+    ( makeSubstituter (defaultOptions { suppress = false })
         """
         hi
             ${test}
@@ -144,7 +144,7 @@ are you
 are you
 """
   test "16"
-    ( createSubstituter
+    ( makeSubstituter
         ( defaultOptions
             { indent = false
             , suppress = false
@@ -169,7 +169,7 @@ how
 are you
 """
   test "17"
-    ( createSubstituter (defaultOptions { indent = false })
+    ( makeSubstituter (defaultOptions { indent = false })
         """
         hi
             ${test}
@@ -238,7 +238,7 @@ how
 are you
 """
   test "24"
-    ( createSubstituter
+    ( makeSubstituter
         ( defaultOptions
             { indent = false
             , suppress = false
@@ -372,7 +372,7 @@ bar
   log baz
 """
   test "docs: suppress"
-    ( createSubstituter (defaultOptions { suppress = false })
+    ( makeSubstituter (defaultOptions { suppress = false })
         """
         f = do
           ${body}
