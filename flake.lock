@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "easy-ps": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1617260174,
+        "narHash": "sha256-iTgnNw3aZfpClhfPWHZ+5e19oe23KonPL9/j0iXba/Y=",
+        "owner": "justinwoo",
+        "repo": "easy-purescript-nix",
+        "rev": "9b56211db78efc447abf26c39d6968e8b03924e0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "justinwoo",
+        "repo": "easy-purescript-nix",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1605370193,
@@ -17,11 +33,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1606842859,
-        "narHash": "sha256-TOa8z86DrB4r1a1nqTCM6xujtGsa3fTa3h1hopiaoJU=",
+        "lastModified": 1616670887,
+        "narHash": "sha256-wn+l9qJfR5sj5Gq4DheJHAcBDfOs9K2p9seW2f35xzs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "29528a11dadb87706c7b3d2ad86aa9e485f74a25",
+        "rev": "c0e881852006b132236cbf0301bd1939bb50867e",
         "type": "github"
       },
       "original": {
@@ -31,11 +47,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1607861213,
-        "narHash": "sha256-pgkE9Q6q410Ch1Twg5hw3bHtRLj9BLLDH1v7HnD4yCM=",
+        "lastModified": 1608723372,
+        "narHash": "sha256-XoCD827n1+bBPVxjKFmAikh7KSIspj9BBj2vnWhtTC4=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "62fab0d98ae9f62c41832ec2986bb7d8622786a0",
+        "rev": "b67ba0bfcc714453cdeb8d713e35751eb8b4c8f4",
         "type": "github"
       },
       "original": {
@@ -45,6 +61,7 @@
     },
     "root": {
       "inputs": {
+        "easy-ps": "easy-ps",
         "nixpkgs": "nixpkgs",
         "utils": "utils"
       }
@@ -55,11 +72,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1607971648,
-        "narHash": "sha256-YPS5qB+cnmV5xKsTMUyU1udmscIls6vbkdoRCSoaKbI=",
+        "lastModified": 1614319620,
+        "narHash": "sha256-9e15MKXRWKwnn/cGnJyVUwTYM3fw6+vHq/vQRLjMcXE=",
         "owner": "ursi",
         "repo": "flake-utils",
-        "rev": "3a39444700665688ab47d4e65c4eb928c879e3b5",
+        "rev": "e4ef06ee72cf0ae5f9931b0360e97bed7b6fb501",
         "type": "github"
       },
       "original": {
