@@ -1,19 +1,35 @@
-{ inputs.easy-ps =
-    { url = "github:justinwoo/easy-purescript-nix";
-      flake = false;
+{ inputs =
+    { nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+      purs-nix.url = "github:ursi/purs-nix";
+      utils.url = "github:ursi/flake-utils";
     };
 
-  outputs = { nixpkgs, utils, easy-ps, ... }:
-    utils.mkShell
-      ({ pkgs, ... }: with pkgs;
-         { buildInputs =
-             [ dhall
-               nodejs
-               nodePackages.bower
-               nodePackages.pulp
-               purescript
-               (import (easy-ps) { inherit pkgs; }).spago
-             ];
+  outputs = { nixpkgs, utils, purs-nix, ... }:
+    utils.defaultSystems
+      ({ pkgs, system }:
+         let
+           pn = purs-nix { inherit system; };
+           inherit (pn) purs ps-pkgs ps-pkgs-ns;
+           inherit
+             (purs
+                { inherit (import ./package.nix pn) dependencies;
+                  test-dependencies = [ ps-pkgs."assert" ];
+                  src = ./src;
+                }
+             )
+             shell;
+         in
+         { devShell =
+             with pkgs;
+             mkShell
+               { buildInputs =
+                   [ nodejs
+                     nodePackages.bower
+                     nodePackages.pulp
+                     purescript
+                     (shell {})
+                   ];
+               };
          }
       )
       nixpkgs;
