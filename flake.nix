@@ -10,6 +10,7 @@
          let
            pn = purs-nix { inherit system; };
            inherit (pn) purs ps-pkgs ps-pkgs-ns;
+
            inherit
              (purs
                 { inherit (import ./package.nix pn) dependencies;
