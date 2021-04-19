@@ -8,13 +8,19 @@ module Substitute
   , minimalOptions
   ) where
 
-import MasonPrelude
+import Prelude
+
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as ArrayNE
+import Data.Foldable (foldl)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.String (Pattern(..))
 import Data.String as String
+import Data.String.CodeUnits (toCharArray)
 import Data.String.CodeUnits as StringC
+import Data.Tuple (snd)
+import Data.Tuple.Nested ((/\))
 import Foreign.Object as Obj
 import Return (Return(..))
 import Return.Folds as Rfolds
@@ -23,8 +29,8 @@ import Type.Row.Homogeneous (class Homogeneous)
 toLines :: String -> NonEmptyArray String
 toLines =
   String.split (Pattern "\n")
-  .> ArrayNE.fromArray
-  .> fromMaybe (pure "")
+  >>> ArrayNE.fromArray
+  >>> fromMaybe (pure "")
 
 -- | Remove whitespace in a way that lets you use multi-line strings independent of indentation, and allows the first line to be lined up with the rest of the string. Single-line strings are unchanged.
 -- |```
@@ -227,7 +233,7 @@ makeSubstituter
     Rfolds.foldl
       (\(state'@{ leadingSpaces, state } /\ str) char ->
          let
-           charS = fromChar char
+           charS = StringC.singleton char
            plusOneState = state' { leadingSpaces = leadingSpaces + 1 }
          in
            case state, char of

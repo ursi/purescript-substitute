@@ -1,10 +1,13 @@
-{ ps-pkgs, ps-pkgs-ns, ... }:
+{ ps-pkgs, ... }:
   with ps-pkgs;
   { version = "0.2.0";
 
     dependencies =
-      [ foreign-object
-        ps-pkgs-ns.ursi.prelude
+      [ foldable-traversable
+        foreign-object
+        maybe
+        prelude
         return
+        strings
       ];
   }
