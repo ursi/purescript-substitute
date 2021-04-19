@@ -318,6 +318,7 @@ are you
   baz
 }
 """
+  -- TODO: what if 'test2' is a multi-line string?
   test "31"
     (substitute
        """
