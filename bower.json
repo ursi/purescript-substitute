@@ -1,21 +1,24 @@
 {
-    "name": "purescript-substitute",
-    "license": [
-        "BSD-3-Clause"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ursi/purescript-substitute.git"
-    },
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "output"
-    ],
-    "dependencies": {
-        "purescript-foreign-object": "^v3.0.0",
-        "purescript-mason-prelude": "https://github.com/ursi/purescript-mason-prelude.git#v0.6.0",
-        "purescript-return": "https://github.com/ursi/purescript-return.git#v0.1.1"
-    }
+  "dependencies": {
+    "purescript-foldable-traversable": "^v5.0.1",
+    "purescript-foreign-object": "^v3.0.0",
+    "purescript-maybe": "^v5.0.0",
+    "purescript-prelude": "^v5.0.1",
+    "purescript-return": "https://github.com/ursi/purescript-return.git#v0.1.2",
+    "purescript-strings": "^v5.0.0"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "license": [
+    "BSD-3-Clause"
+  ],
+  "name": "purescript-substitute",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ursi/purescript-substitute.git"
+  }
 }
