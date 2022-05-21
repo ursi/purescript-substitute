@@ -14,8 +14,8 @@
            inherit
              (purs
                 { inherit (package) dependencies;
-                  test-dependencies = [ ps-pkgs."assert" ];
-                  src = ./src;
+                  test-dependencies = [ ps-pkgs."assert" ps-pkgs-ns.ursi.prelude ];
+                  srcs = [ ./src ];
                 }
              )
              command;

@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "purescript-foldable-traversable": "^v5.0.1",
-    "purescript-foreign-object": "^v3.0.0",
-    "purescript-maybe": "^v5.0.0",
-    "purescript-prelude": "^v5.0.1",
-    "purescript-return": "https://github.com/ursi/purescript-return.git#v0.1.2",
-    "purescript-strings": "^v5.0.0"
+    "purescript-foldable-traversable": "^v6.0.0",
+    "purescript-foreign-object": "^v4.0.0",
+    "purescript-maybe": "^v6.0.0",
+    "purescript-prelude": "^v6.0.0",
+    "purescript-return": "https://github.com/ursi/purescript-return.git#v0.2.0",
+    "purescript-strings": "^v6.0.0"
   },
   "ignore": [
     "**/.*",
