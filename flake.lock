@@ -100,11 +100,11 @@
     },
     "make-shell_2": {
       "locked": {
-        "lastModified": 1619482051,
-        "narHash": "sha256-HM5lFiBKKfy/L7Ifk6mKRTT1UfQfSSzIMLBzDnPkH6Q=",
+        "lastModified": 1634940815,
+        "narHash": "sha256-P69OmveboXzS+es1vQGS4bt+ckwbeIExqxfGLjGuJqA=",
         "owner": "ursi",
         "repo": "nix-make-shell",
-        "rev": "ed72df45d0a81784eee8603e366e1f1ae9da6950",
+        "rev": "8add91681170924e4d0591b22f294aee3f5516f9",
         "type": "github"
       },
       "original": {
@@ -150,11 +150,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1617984351,
-        "narHash": "sha256-mo/tmR1sVmQ+4uziIAZpdNnr9AG0NAAo9Md3tucf73k=",
+        "lastModified": 1653117584,
+        "narHash": "sha256-5uUrHeHBIaySBTrRExcCoW8fBBYVSDjDYDU5A6iOl+k=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "842f900e73c7ce985218cc4f455e34d1d56475c1",
+        "rev": "f4dfed73ee886b115a99e5b85fdfbeb683290d83",
         "type": "github"
       },
       "original": {
@@ -230,7 +230,7 @@
         "builders": "builders",
         "deadnix": "deadnix",
         "easy-ps": "easy-ps",
-        "make-shell": "make-shell",
+        "make-shell": "make-shell_2",
         "nixpkgs": "nixpkgs_4",
         "purescript-language-server": "purescript-language-server",
         "utils": "utils_2"
@@ -251,6 +251,7 @@
     },
     "root": {
       "inputs": {
+        "make-shell": "make-shell",
         "nixpkgs": "nixpkgs",
         "purs-nix": "purs-nix",
         "utils": "utils_3"
@@ -292,20 +293,19 @@
     },
     "utils_3": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
-        "make-shell": "make-shell_2"
+        "flake-utils": "flake-utils_2"
       },
       "locked": {
-        "lastModified": 1619482154,
-        "narHash": "sha256-8H/k4bCq2EMKc4Q1ACDSuaEZs8SNRCjZWD4/wi50v2Y=",
+        "lastModified": 1651458199,
+        "narHash": "sha256-QDdW1ELhvXBw5ijByPLeDl9YKKIAPWjXTOfYsmB1f+c=",
         "owner": "ursi",
         "repo": "flake-utils",
-        "rev": "2493ce466204663f24b3a813d8d5876f4d773fd7",
+        "rev": "c30f5538ce102474745b78d2806a4342e9b0e2cd",
         "type": "github"
       },
       "original": {
         "owner": "ursi",
-        "ref": "1",
+        "ref": "8",
         "repo": "flake-utils",
         "type": "github"
       }
